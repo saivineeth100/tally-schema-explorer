@@ -1,0 +1,5 @@
+{
+  "name": "Tally Schema Explorer",
+  "description": "A modern, responsive documentation website that intelligently parses and displays Tally ERP object schemas from a collection of JSON files, providing a clear and navigable reference for developers.",
+  "requestFramePermissions": []
+}

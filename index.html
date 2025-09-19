@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tally Schema Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'gray-900': '#121212',
+              'gray-800': '#1e1e1e',
+              'gray-700': '#2d2d2d',
+              'gray-600': '#444444',
+              'gray-500': '#6b7280',
+              'gray-400': '#a0a0a0',
+              'gray-300': '#d1d5db',
+              'gray-200': '#e5e7eb',
+              'gray-100': '#f3f4f6',
+              'gray-50': '#f9fafb',
+              'cyan-400': '#22d3ee',
+              'cyan-500': '#06b6d4',
+              'cyan-600': '#0891b2',
+            }
+          }
+        }
+      }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.1"
+  }
+}
+</script>
+<style>
+      /* Custom scrollbar for Webkit browsers */
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background-color: #f3f4f6; /* gray-100 */
+      }
+      ::-webkit-scrollbar-thumb {
+        background-color: #d1d5db; /* gray-300 */
+        border-radius: 10px;
+        border: 2px solid #f3f4f6; /* gray-100 */
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background-color: #a0a0a0; /* gray-400 */
+      }
+      html.dark ::-webkit-scrollbar-track {
+        background-color: #121212; /* gray-900 */
+      }
+      html.dark ::-webkit-scrollbar-thumb {
+        background-color: #444444; /* gray-600 */
+        border-color: #121212; /* gray-900 */
+      }
+      html.dark ::-webkit-scrollbar-thumb:hover {
+        background-color: #6b7280; /* gray-500 */
+      }
+      /* Custom scrollbar for Firefox */
+      html {
+        scrollbar-width: thin;
+        scrollbar-color: #d1d5db #f3f4f6;
+      }
+      html.dark {
+        scrollbar-color: #444444 #121212;
+      }
+    </style>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 antialiased">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>
