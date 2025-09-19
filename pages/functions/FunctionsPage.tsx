@@ -2,7 +2,7 @@ import React from 'react';
 import ItemPage from '../shared/ItemPage';
 
 const FunctionsPage: React.FC = () => {
-    return <ItemPage itemType="function" />;
+    return <ItemPage itemType="Function" />;
 };
 
 export default FunctionsPage;

@@ -4,6 +4,7 @@ import { TallySchema, TallyProperty } from '../types';
 import Spinner from './Spinner';
 import MetadataView from './MetadataView';
 import CopyLinkButton from './CopyLinkButton';
+import { SCHEMALOCATION } from '@/constants';
 
 const SchemaView: React.FC = () => {
   const { version, schemaName } = useParams<{ version: string; schemaName: string }>();
@@ -21,7 +22,7 @@ const SchemaView: React.FC = () => {
       setError(null);
       setSchema(null);
       try {
-        const response = await fetch(`/schemas/${version}/${schemaName}.json`);
+        const response = await fetch(`${SCHEMALOCATION.replace("{version}", version)}/${schemaName}.json`);
         if (!response.ok) {
           throw new Error(`Schema not found: ${schemaName} (Version: ${version})`);
         }
@@ -36,7 +37,7 @@ const SchemaView: React.FC = () => {
 
     fetchSchema();
   }, [version, schemaName]);
-  
+
   useEffect(() => {
     if (loading || !schema) return;
 
@@ -91,8 +92,8 @@ const SchemaView: React.FC = () => {
               </thead>
               <tbody ref={propertiesContainerRef} className="divide-y divide-gray-200 dark:divide-gray-700">
                 {properties.map(([propName, propDetails]) => (
-                  <tr 
-                    key={propName} 
+                  <tr
+                    key={propName}
                     data-property-name={propDetails.Name}
                     className="hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
                   >
@@ -107,8 +108,8 @@ const SchemaView: React.FC = () => {
                         const objectName = propDetails.Meta['Object Name'];
                         if (propDetails.IsComplex && objectName) {
                           return (
-                            <Link 
-                              to={`/schema/${version}/schema/${objectName.replace(/\s+/g, '')}`} 
+                            <Link
+                              to={`/${version}/schema/${objectName}`}
                               className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 dark:hover:text-cyan-300 hover:underline"
                             >
                               {objectName}

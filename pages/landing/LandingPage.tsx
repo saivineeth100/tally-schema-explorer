@@ -23,7 +23,7 @@ const LandingPage: React.FC = () => {
             Explore Schemas
           </Link>
           <a
-            href="https://github.com/Tally-Schema-Explorer/website"
+            href="https://github.com/saivineeth100/tally-schema-explorer"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-3 px-8 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -72,7 +72,7 @@ const LandingPage: React.FC = () => {
           </p>
           <div className="mt-8 flex justify-center gap-4 flex-wrap">
              <a
-              href="https://github.com/Tally-Schema-Explorer/website"
+              href="https://github.com/saivineeth100/tally-schema-explorer"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-8 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -81,7 +81,7 @@ const LandingPage: React.FC = () => {
               Star on GitHub
             </a>
             <a
-              href="https://github.com/sponsors/Tally-Schema-Explorer"
+              href="https://github.com/sponsors/saivineeth100"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-8 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"

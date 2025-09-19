@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { BoltIcon, ChevronRightIcon, CodeIcon, DocumentIcon } from './icons';
 import VersionSelector from './VersionSelector';
+import { TypeUrls } from '@/pages/shared/ItemWelcome';
 
 type Item = { Name: string };
 type ItemsByType = Record<string, Record<string, Item>>;
@@ -42,7 +43,7 @@ const ItemSidebar: React.FC<ItemSidebarProps> = ({ availableVersions, currentVer
             return newSet;
         });
     };
-    
+
     const placeholders: Record<ItemType, string> = {
         function: "Filter functions...",
         definition: "Filter attributes...",
@@ -55,7 +56,7 @@ const ItemSidebar: React.FC<ItemSidebarProps> = ({ availableVersions, currentVer
     };
 
     const itemTypes = Object.keys(itemsByType).sort();
-    
+
     const navLinkClasses = "flex items-center w-full px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150";
     const activeClassName = "bg-cyan-500 text-white";
     const inactiveClassName = "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white";
@@ -65,7 +66,7 @@ const ItemSidebar: React.FC<ItemSidebarProps> = ({ availableVersions, currentVer
     return (
         <div className="flex flex-col h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
             <div className="p-4 space-y-4 border-b border-gray-200 dark:border-gray-700">
-                 <VersionSelector
+                <VersionSelector
                     versions={availableVersions}
                     currentVersion={currentVersion}
                     onChange={onVersionChange}
@@ -83,7 +84,7 @@ const ItemSidebar: React.FC<ItemSidebarProps> = ({ availableVersions, currentVer
                 {itemTypes.map(type => {
                     const items = Object.values(itemsByType[type] || {}).sort((a, b) => a.Name.localeCompare(b.Name));
                     const filteredItems = items.filter(item => item.Name.toLowerCase().includes(filter.toLowerCase()));
-                    
+
                     if (filterActive && filteredItems.length === 0) {
                         return null;
                     }
@@ -98,15 +99,15 @@ const ItemSidebar: React.FC<ItemSidebarProps> = ({ availableVersions, currentVer
                                     <span className="font-semibold">{type}</span>
                                 </div>
                                 {!filterActive && (
-                                  <ChevronRightIcon className={`w-4 h-4 transform transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                                    <ChevronRightIcon className={`w-4 h-4 transform transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                                 )}
                             </button>
                             {isExpanded && (
                                 <ul className="pl-6 mt-1 space-y-1 border-l border-gray-200 dark:border-gray-600 ml-3">
                                     {filteredItems.map(item => (
-                                         <li key={item.Name}>
+                                        <li key={item.Name}>
                                             <NavLink
-                                                to={`${basePath}/${currentVersion}/${encodeURIComponent(type)}/${encodeURIComponent(item.Name)}`}
+                                                to={`/${currentVersion}/${TypeUrls[itemType]}/${encodeURIComponent(type)}/${encodeURIComponent(item.Name)}`}
                                                 onClick={onClose}
                                                 className={({ isActive }) => `${navLinkClasses} text-xs ${isActive ? activeClassName : inactiveClassName}`}
                                             >

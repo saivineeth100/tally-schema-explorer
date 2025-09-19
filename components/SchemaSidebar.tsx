@@ -39,7 +39,7 @@ const SchemaSidebar: React.FC<{
                 {filteredSchemaNames.map(name => (
                     <NavLink
                         key={name}
-                        to={`/schema/${currentVersion}/schema/${name.replace(/\s+/g, '')}`}
+                        to={`/${currentVersion}/schema/${name}`}
                         onClick={onClose}
                         className={({ isActive }) => `${navLinkClasses} ${isActive ? activeClassName : inactiveClassName}`}
                     >

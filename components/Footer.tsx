@@ -30,12 +30,12 @@ const Footer: React.FC = () => {
               <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">Community</h3>
               <ul className="mt-4 space-y-4">
                 <li>
-                  <a href="https://github.com/Tally-Schema-Explorer/website" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-base text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                  <a href="https://github.com/saivineeth100/tally-schema-explorer" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-base text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
                     <StarIcon className="w-5 h-5 mr-2" /> Star on GitHub
                   </a>
                 </li>
                 <li>
-                  <a href="https://github.com/sponsors/Tally-Schema-Explorer" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-base text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                  <a href="https://github.com/sponsors/saivineeth100" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-base text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
                     <HeartIcon className="w-5 h-5 mr-2 text-pink-500" /> Sponsor Us
                   </a>
                 </li>

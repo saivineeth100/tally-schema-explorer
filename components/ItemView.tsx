@@ -125,11 +125,11 @@ const ItemView: React.FC<{ item: Item, itemType: ItemType }> = ({ item, itemType
             return <p className="text-gray-500 dark:text-gray-400 italic">This item does not take any parameters.</p>;
         }
         switch (itemType) {
-            case 'function':
+            case 'Function':
                 return (Parameters as FunctionParameter[]).length > 0 ? <FunctionParametersTable parameters={Parameters as FunctionParameter[]} /> : <p className="text-gray-500 dark:text-gray-400 italic">This function does not take any parameters.</p>;
-            case 'definition':
+            case 'Definition':
                 return (Parameters as DefinitionAttributeParameter[]).length > 0 ? <DefinitionParametersTable parameters={Parameters as DefinitionAttributeParameter[]} /> : <p className="text-gray-500 dark:text-gray-400 italic">This attribute does not take any parameters.</p>;
-            case 'action':
+            case 'Action':
                 return <ActionParametersTable parameters={Parameters as ActionParameter[]} />;
             default:
                 return null;

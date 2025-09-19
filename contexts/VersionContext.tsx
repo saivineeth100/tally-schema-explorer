@@ -15,7 +15,7 @@ export const VersionProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   useEffect(() => {
     if (availableVersions.length > 0 && !currentVersion) {
-      setCurrentVersion(availableVersions[0]);
+      setCurrentVersion(availableVersions[availableVersions.length - 1]);
     }
   }, [availableVersions, currentVersion]);
 

@@ -17,7 +17,7 @@ const VersionSelector: React.FC<{
       aria-label="Select schema version"
     >
       {versions.map((v) => (
-        <option key={v} value={v}>{`Version ${v.substring(1)}`}</option>
+        <option key={v} value={v}>{`Version ${v}`}</option>
       ))}
     </select>
     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">

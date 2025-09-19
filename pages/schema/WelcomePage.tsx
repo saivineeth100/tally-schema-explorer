@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { TallySchema } from '../../types';
 import Spinner from '../../components/Spinner';
 import { DocumentIcon } from '../../components/icons';
+import { SCHEMALOCATION } from '@/constants';
 
 const WelcomePage: React.FC<{ version: string; schemaNames: string[] }> = ({ version, schemaNames }) => {
     const [primarySchemas, setPrimarySchemas] = useState<TallySchema[]>([]);
@@ -21,21 +22,21 @@ const WelcomePage: React.FC<{ version: string; schemaNames: string[] }> = ({ ver
             setError(null);
             try {
                 const schemaPromises = schemaNames.map(name =>
-                    fetch(`/schemas/${version}/${name}.json`).then(res => {
-                        if (!res.ok) throw new Error(`Failed to fetch ${name}.json`);
+                    fetch(`${SCHEMALOCATION.replace("{version}", version)}/${name}.json`).then(res => {
+                        if (!res.ok) throw new Error(`Failed to fetch ${name}`);
                         return res.json();
                     })
                 );
-                
+
                 const allSchemasResults = await Promise.allSettled(schemaPromises);
-                
+
                 const successfullyFetchedSchemas = allSchemasResults
                     .filter(result => result.status === 'fulfilled')
                     .map(result => (result as PromiseFulfilledResult<TallySchema>).value);
 
                 const primary = successfullyFetchedSchemas
                     .filter(s => s.Meta['Is Primary'] === 'Yes');
-                
+
                 setPrimarySchemas(primary.sort((a, b) => a.Name.localeCompare(b.Name)));
 
             } catch (err) {
@@ -56,21 +57,21 @@ const WelcomePage: React.FC<{ version: string; schemaNames: string[] }> = ({ ver
             <header className="mb-8">
                 <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-2">Primary Schemas</h1>
                 <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400">
-                    Core objects for <span className="font-semibold text-cyan-500 dark:text-cyan-400">Version {version.substring(1)}</span>. Select a schema to view details.
+                    Core objects for <span className="font-semibold text-cyan-500 dark:text-cyan-400">Version {version}</span>. Select a schema to view details.
                 </p>
             </header>
-            
+
             {primarySchemas.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {primarySchemas.map(schema => (
                         <Link
                             key={schema.Name}
-                            to={`/schema/${version}/schema/${schema.Name.replace(/\s+/g, '')}`}
+                            to={`/${version}/schema/${schema.Name}`}
                             className="block bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 ease-in-out group border border-gray-200 dark:border-gray-700 hover:border-cyan-500 dark:hover:border-cyan-400"
                         >
                             <div className="flex items-center mb-4">
                                 <div className="p-2 bg-cyan-100 dark:bg-cyan-500/20 rounded-lg mr-4">
-                                   <DocumentIcon className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
+                                    <DocumentIcon className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
                                 </div>
                                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                                     {schema.Name}
@@ -89,7 +90,7 @@ const WelcomePage: React.FC<{ version: string; schemaNames: string[] }> = ({ ver
                 </div>
             ) : (
                 <div className="text-center py-12">
-                     <DocumentIcon className="mx-auto h-12 w-12 text-gray-400" />
+                    <DocumentIcon className="mx-auto h-12 w-12 text-gray-400" />
                     <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No Primary Schemas</h3>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">No schemas were marked as "primary" for this version.</p>
                 </div>

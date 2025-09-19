@@ -44,13 +44,13 @@ const Header: React.FC = () => {
             >
                 Actions
             </NavLink>
-            <NavLink
+            {/* <NavLink
                 to="/compare"
                 className={({ isActive }) => isMenuOpen ? `${navLinkClasses} ${isActive ? activeClassName : inactiveClassName}` : `${desktopNavLinkClasses} ${isActive ? desktopActiveClassName : desktopInactiveClassName}`}
                 onClick={() => setIsMenuOpen(false)}
             >
                 Compare
-            </NavLink>
+            </NavLink> */}
         </>
     );
 

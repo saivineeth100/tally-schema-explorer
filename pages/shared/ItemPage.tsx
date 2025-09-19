@@ -7,7 +7,8 @@ import Spinner from '../../components/Spinner';
 import { MenuIcon } from '../../components/icons';
 import { TallyFunction, DefinitionAttribute, TallyAction } from '../../types';
 import { useVersion } from '../../contexts/VersionContext';
-import ItemWelcome from '../ItemWelcome';
+import ItemWelcome, { TypeUrls } from './ItemWelcome';
+import { ITEMLOCATION, SCHEMALOCATION } from '@/constants';
 
 type ItemType = 'function' | 'definition' | 'action';
 type ItemIndex = Record<string, string[]>;
@@ -21,14 +22,13 @@ interface ItemPageProps {
 const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
     const params = useParams<{ version: string; type?: string; itemName?: string }>();
     const { version, type: itemCategory, itemName } = params;
-    
+
     const navigate = useNavigate();
     const { availableVersions, currentVersion, setCurrentVersion } = useVersion();
-    
-    const basePath = `/${itemType}s`;
-    const versionForPage = (version && availableVersions.includes(version)) ? version : (currentVersion || (availableVersions.length > 0 ? availableVersions[0] : ''));
 
-    const [itemIndex, setItemIndex] = useState<ItemIndex | null>(null);
+    const versionForPage = (version && availableVersions.includes(version)) ? version : (currentVersion || (availableVersions.length > 0 ? availableVersions[0] : ''));
+    const [basePath, setBasePath] = useState<string>(null);
+    const [itemIndex, setItemIndex] = useState<string[]>([]);
     const [indexLoading, setIndexLoading] = useState(true);
     const [indexError, setIndexError] = useState<string | null>(null);
 
@@ -37,13 +37,16 @@ const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
     const [error, setError] = useState<string | null>(null);
     const [filter, setFilter] = useState('');
     const [sidebarOpen, setSidebarOpen] = useState(false);
-
     useEffect(() => {
+        setBasePath(ITEMLOCATION.replace("{version}", version).replace("{ItemType}", itemType));
+    }, [itemType])
+    useEffect(() => {
+        if (!basePath) return;
         const fetchItemIndex = async () => {
             setIndexLoading(true);
             setIndexError(null);
             try {
-                const response = await fetch(`${basePath}/_index.json`);
+                const response = await fetch(`${basePath}/index.json`);
                 if (!response.ok) {
                     throw new Error(`Failed to fetch ${itemType} index file`);
                 }
@@ -56,7 +59,7 @@ const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
             }
         };
         fetchItemIndex();
-    }, [basePath, itemType]);
+    }, [basePath]);
 
     useEffect(() => {
         if (version && availableVersions.includes(version)) {
@@ -64,24 +67,24 @@ const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
         }
     }, [version, availableVersions, setCurrentVersion]);
 
-    useEffect(() => {
-        if ((!version || !availableVersions.includes(version)) && availableVersions.length > 0) {
-            navigate(`${basePath}/${currentVersion || availableVersions[0]}`, { replace: true });
-        }
-    }, [version, availableVersions, navigate, currentVersion, basePath]);
+    // useEffect(() => {
+    //     if ((!version || !availableVersions.includes(version)) && availableVersions.length > 0) {
+    //         navigate(`${basePath}/${currentVersion || availableVersions[0]}`, { replace: true });
+    //     }
+    // }, [version, availableVersions, navigate, currentVersion, basePath]);
 
     useEffect(() => {
         const fetchAllItemsForVersion = async () => {
-            if (!versionForPage || !itemIndex) return;
+            if (!basePath || itemIndex.length === 0) return;
 
             setLoading(true);
             setError(null);
             setAllItems({});
-            
+
             try {
-                const typesToFetch = itemIndex[versionForPage] || [];
+                const typesToFetch = itemIndex;
                 const itemsPromises = typesToFetch.map(async (type) => {
-                    const response = await fetch(`${basePath}/${versionForPage}/${encodeURIComponent(type)}.json`);
+                    const response = await fetch(`${basePath}/${encodeURIComponent(type)}.json`);
                     if (!response.ok) {
                         console.warn(`Could not load ${itemType}s for ${type} (version ${versionForPage}). File might not exist.`);
                         return { type, data: {} };
@@ -89,7 +92,7 @@ const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
                     const data: Record<string, ItemData> = await response.json();
                     return { type, data };
                 });
-                
+
                 const results = await Promise.all(itemsPromises);
                 const itemsMap = results.reduce((acc, { type, data }) => {
                     acc[type] = data;
@@ -98,33 +101,34 @@ const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
 
                 setAllItems(itemsMap);
             } catch (err) {
-                 setError(err instanceof Error ? err.message : `An unknown error occurred while fetching ${itemType}s.`);
+                setError(err instanceof Error ? err.message : `An unknown error occurred while fetching ${itemType}s.`);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchAllItemsForVersion();
-    }, [versionForPage, itemIndex, basePath, itemType]);
+    }, [itemIndex, itemIndex, itemType]);
 
     const handleVersionChange = (newVersion: string) => {
-        if (!itemIndex) return;
-        const firstTypeForNewVersion = itemIndex[newVersion]?.[0];
-        if (itemCategory && itemIndex[newVersion]?.includes(itemCategory)) {
-             navigate(`${basePath}/${newVersion}/${encodeURIComponent(itemCategory)}`);
-        } else if (firstTypeForNewVersion) {
-            navigate(`${basePath}/${newVersion}/${encodeURIComponent(firstTypeForNewVersion)}`);
-        } else {
-            navigate(`${basePath}/${newVersion}`);
-        }
+        navigate(`/${newVersion}/${TypeUrls[itemType]}/`);
+        // if (!itemIndex) return;
+        // const firstTypeForNewVersion = itemIndex[newVersion]?.[0];
+        // if (itemCategory && itemIndex[newVersion]?.includes(itemCategory)) {
+        //     navigate(`${basePath}/${newVersion}/${encodeURIComponent(itemCategory)}`);
+        // } else if (firstTypeForNewVersion) {
+        //     navigate(`${basePath}/${newVersion}/${encodeURIComponent(firstTypeForNewVersion)}`);
+        // } else {
+        //     navigate(`${basePath}/${newVersion}`);
+        // }
     };
 
     const itemData = itemCategory && itemName && allItems[itemCategory] ? allItems[itemCategory][itemName] : null;
-    
+
     if (indexLoading || (!versionForPage && availableVersions.length > 0)) {
         return <div className="flex items-center justify-center h-full"><Spinner /></div>;
     }
-    
+
     if (indexError) {
         return <div className="p-8 text-red-600 dark:text-red-400 text-center">{indexError}</div>;
     }
@@ -150,7 +154,7 @@ const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
     );
 
     return (
-         <div className="flex">
+        <div className="flex">
             <aside className="hidden lg:block w-72 flex-shrink-0 sticky top-16 h-[calc(100vh-4rem)]">
                 {sidebarContent}
             </aside>
@@ -169,14 +173,14 @@ const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
                             return <ItemView item={itemData} itemType={itemType} />;
                         }
                         const itemsForCategory = itemCategory ? Object.values(allItems[itemCategory] || {}) : [];
-                        return <ItemWelcome 
-                                    version={versionForPage} 
-                                    itemType={itemType} 
-                                    activeType={itemCategory} 
-                                    types={itemIndex[versionForPage] || []}
-                                    items={itemsForCategory}
-                                    basePath={basePath}
-                                />;
+                        return <ItemWelcome
+                            version={versionForPage}
+                            itemType={itemType}
+                            activeType={itemCategory}
+                            types={itemIndex}
+                            items={itemsForCategory}
+                            basePath={basePath}
+                        />;
                     })()
                 )}
             </main>
