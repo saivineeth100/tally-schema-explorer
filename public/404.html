@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Redirecting...</title>
+    <script>
+        // Redirect all unknown routes to index.html, preserving the path
+        const redirectTo = window.location.origin + '/index.html?redirect=' +
+            encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
+        window.location.replace(redirectTo);
+    </script>
+</head>
+
+<body>
+    <p>Redirecting...</p>
+</body>
+
+</html>
