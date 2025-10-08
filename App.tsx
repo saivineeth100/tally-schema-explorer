@@ -14,7 +14,6 @@ import FunctionsPage from './pages/functions/FunctionsPage';
 import DefinitionsPage from './pages/definitions/DefinitionsPage';
 import ActionsPage from './pages/actions/ActionsPage';
 
-import { SchemaIndex } from './types';
 import { VersionProvider, useVersion } from './contexts/VersionContext';
 
 const AppContent: React.FC = () => {
@@ -30,7 +29,7 @@ const AppContent: React.FC = () => {
                 // const schemasRes = await fetch('/schemas/_index.json');
 
                 if (!versionsResp.ok) {
-                    throw new Error('Failed to fetch main schema index file');
+                    throw new Error('Failed to fetch versions index file');
                 }
                 // const schemasData = await schemasRes.json();
 
