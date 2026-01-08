@@ -1,0 +1,1 @@
+﻿{"Properties":{"Fetchfromdate":{"Name":"Fetchfromdate","IsComplex":false,"Meta":{"Is Repeated":"No","Datatype":"Date"}},"Fetchgstinnum":{"Name":"Fetchgstinnum","IsComplex":false,"Meta":{"Is Repeated":"No","Datatype":"String"}}},"Meta":{"Is Primary":"No"},"ComplexProperties":{},"Name":"Fetchdel"}

@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { TallyFunction, TallyAction, DefinitionAttribute, FunctionParameter, DefinitionAttributeParameter, ActionParameter } from '../types';
 import MetadataView from './MetadataView';
 import CopyLinkButton from './CopyLinkButton';
+import { ChevronRightIcon } from './icons';
 
 const FunctionParametersTable: React.FC<{ parameters: FunctionParameter[] }> = ({ parameters }) => (
     <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
@@ -13,6 +14,7 @@ const FunctionParametersTable: React.FC<{ parameters: FunctionParameter[] }> = (
                     <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">Datatype</th>
                     <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">Mandatory</th>
                     <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">Variable Argument</th>
+                    <th className="px-4 py-2 font-medium text-gray-600 dark:text-gray-300 min-w-[200px]">Description</th>
                     <th className="px-2 py-2 w-10"></th>
                 </tr>
             </thead>
@@ -27,8 +29,9 @@ const FunctionParametersTable: React.FC<{ parameters: FunctionParameter[] }> = (
                             </span>
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap text-gray-700 dark:text-gray-300 font-mono">{param['Variable Argument']}</td>
+                        <td className="px-4 py-2 text-gray-600 dark:text-gray-400 text-sm">{param.Description || '-'}</td>
                         <td className="px-2 py-2">
-                             <CopyLinkButton url={`${window.location.href.split('?')[0]}?activeparameter=${index}`} />
+                            <CopyLinkButton url={`${window.location.href.split('?')[0]}?activeparameter=${index}`} />
                         </td>
                     </tr>
                 ))}
@@ -38,7 +41,7 @@ const FunctionParametersTable: React.FC<{ parameters: FunctionParameter[] }> = (
 );
 
 const PARAMETER_COLUMNS: (keyof DefinitionAttributeParameter)[] = [
-    "Parameter Type", "Datatype", "Is Mandatory", "Is Constant", "Is List", "Refers To", "Keywords",
+    "Parameter Type", "Datatype", "Is Mandatory", "Is Constant", "Is List", "Refers To", "Keywords", "Description"
 ];
 
 const DefinitionParametersTable: React.FC<{ parameters: DefinitionAttributeParameter[] }> = ({ parameters }) => {
@@ -56,7 +59,7 @@ const DefinitionParametersTable: React.FC<{ parameters: DefinitionAttributeParam
                         {visibleParameterColumns.map(colName => (
                             <th key={colName} className="px-4 py-2 font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">{colName}</th>
                         ))}
-                         <th className="px-2 py-2 w-10"></th>
+                        <th className="px-2 py-2 w-10"></th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -93,7 +96,12 @@ const ActionParametersTable: React.FC<{ parameters: ActionParameter[] }> = ({ pa
 type Item = TallyFunction | DefinitionAttribute | TallyAction;
 type ItemType = 'function' | 'definition' | 'action';
 
-const ItemView: React.FC<{ item: Item, itemType: ItemType }> = ({ item, itemType }) => {
+const ItemView: React.FC<{
+    item: Item,
+    itemType: ItemType,
+    history?: { added?: string; deleted?: string },
+    currentVersion?: string
+}> = ({ item, itemType, history, currentVersion }) => {
     const { Name, Description, Meta, Parameters } = item;
     const location = useLocation();
     const parametersContainerRef = useRef<HTMLElement>(null);
@@ -124,6 +132,7 @@ const ItemView: React.FC<{ item: Item, itemType: ItemType }> = ({ item, itemType
         if (!Parameters) {
             return <p className="text-gray-500 dark:text-gray-400 italic">This item does not take any parameters.</p>;
         }
+        // ... (rest of logic)
         switch (itemType) {
             case 'Function':
                 return (Parameters as FunctionParameter[]).length > 0 ? <FunctionParametersTable parameters={Parameters as FunctionParameter[]} /> : <p className="text-gray-500 dark:text-gray-400 italic">This function does not take any parameters.</p>;
@@ -138,11 +147,25 @@ const ItemView: React.FC<{ item: Item, itemType: ItemType }> = ({ item, itemType
 
     const aliases = (Meta as any).Aliases;
 
+    const currentVerNum = currentVersion ? parseFloat(currentVersion.replace(/^v/, '')) : 0;
+    const addedVerNum = history?.added ? parseFloat(history.added.replace(/^v/, '')) : 0;
+    const deletedVerNum = history?.deleted ? parseFloat(history.deleted.replace(/^v/, '')) : Infinity;
+    const showAdded = history?.added && addedVerNum <= currentVerNum;
+    const showDeleted = history?.deleted && deletedVerNum > currentVerNum; // Logic: if deleted > current, implies it WILL be deleted. If deleted <= current, it IS deleted? 
+    // Wait, if it IS deleted in current version, it wouldn't show up at all in the items list for this version?
+    // Actually, items are often still in "modified" or just gone. If it's gone, we won't see it.
+    // So "Deleted in vX" essentially implies "This item will be deleted in vX" if we are viewing v(X-1).
+    // Let's stick to standard logic: show the tag if data exists.
+
     return (
         <div className="p-4 sm:p-6 md:p-8 text-gray-700 dark:text-gray-300">
-             <header className="mb-8">
-                <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{Name}</h1>
-                 {aliases && <p className="text-sm text-gray-500 dark:text-gray-400">Aliases: {aliases}</p>}
+            <header className="mb-8">
+                <div className="flex flex-wrap items-center gap-3 mb-2">
+                    <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">{Name}</h1>
+                    {showAdded && <span className="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Added in v{history?.added?.replace(/^v/, '')}</span>}
+                    {showDeleted && <span className="bg-red-100 text-red-800 text-sm font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">Deleted in v{history?.deleted?.replace(/^v/, '')}</span>}
+                </div>
+                {aliases && <p className="text-sm text-gray-500 dark:text-gray-400">Aliases: {aliases}</p>}
                 <p className="mt-2 text-base sm:text-lg text-gray-600 dark:text-gray-300">{Description}</p>
             </header>
 
@@ -150,7 +173,7 @@ const ItemView: React.FC<{ item: Item, itemType: ItemType }> = ({ item, itemType
                 <h2 className="text-2xl font-bold text-cyan-500 dark:text-cyan-400 border-b-2 border-gray-200 dark:border-gray-700 pb-2 mb-4">Metadata</h2>
                 <MetadataView meta={Meta} />
             </section>
-            
+
             <section ref={parametersContainerRef}>
                 <h2 className="text-2xl font-bold text-cyan-500 dark:text-cyan-400 border-b-2 border-gray-200 dark:border-gray-700 pb-2 mb-4">Parameters</h2>
                 {renderParameters()}

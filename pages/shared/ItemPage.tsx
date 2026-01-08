@@ -9,6 +9,7 @@ import { TallyFunction, DefinitionAttribute, TallyAction } from '../../types';
 import { useVersion } from '../../contexts/VersionContext';
 import ItemWelcome, { TypeUrls } from './ItemWelcome';
 import { ITEMLOCATION, SCHEMALOCATION } from '@/constants';
+import { useItemHistory } from '../../hooks/useItemHistory';
 
 type ItemType = 'function' | 'definition' | 'action';
 type ItemIndex = Record<string, string[]>;
@@ -25,6 +26,10 @@ const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
 
     const navigate = useNavigate();
     const { availableVersions, currentVersion, setCurrentVersion } = useVersion();
+
+    // Capitalize itemType for folder structure (function -> Function)
+    const capitalizedType = itemType.charAt(0).toUpperCase() + itemType.slice(1);
+    const { history: itemHistory } = useItemHistory(capitalizedType);
 
     const versionForPage = (version && availableVersions.includes(version)) ? version : (currentVersion || (availableVersions.length > 0 ? availableVersions[0] : ''));
     const [basePath, setBasePath] = useState<string>(null);
@@ -67,12 +72,6 @@ const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
         }
     }, [version, availableVersions, setCurrentVersion]);
 
-    // useEffect(() => {
-    //     if ((!version || !availableVersions.includes(version)) && availableVersions.length > 0) {
-    //         navigate(`${basePath}/${currentVersion || availableVersions[0]}`, { replace: true });
-    //     }
-    // }, [version, availableVersions, navigate, currentVersion, basePath]);
-
     useEffect(() => {
         const fetchAllItemsForVersion = async () => {
             if (!basePath || itemIndex.length === 0) return;
@@ -112,15 +111,6 @@ const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
 
     const handleVersionChange = (newVersion: string) => {
         navigate(`/${newVersion}/${TypeUrls[itemType]}/`);
-        // if (!itemIndex) return;
-        // const firstTypeForNewVersion = itemIndex[newVersion]?.[0];
-        // if (itemCategory && itemIndex[newVersion]?.includes(itemCategory)) {
-        //     navigate(`${basePath}/${newVersion}/${encodeURIComponent(itemCategory)}`);
-        // } else if (firstTypeForNewVersion) {
-        //     navigate(`${basePath}/${newVersion}/${encodeURIComponent(firstTypeForNewVersion)}`);
-        // } else {
-        //     navigate(`${basePath}/${newVersion}`);
-        // }
     };
 
     const itemData = itemCategory && itemName && allItems[itemCategory] ? allItems[itemCategory][itemName] : null;
@@ -150,6 +140,7 @@ const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
             activeType={itemCategory}
             activeItem={itemName}
             onClose={() => setSidebarOpen(false)}
+            itemHistory={itemHistory}
         />
     );
 
@@ -170,7 +161,7 @@ const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
                 {!loading && !error && (
                     (() => {
                         if (itemData) {
-                            return <ItemView item={itemData} itemType={itemType} />;
+                            return <ItemView item={itemData} itemType={itemType} history={itemHistory[itemData.Name]} currentVersion={versionForPage} />;
                         }
                         const itemsForCategory = itemCategory ? Object.values(allItems[itemCategory] || {}) : [];
                         return <ItemWelcome

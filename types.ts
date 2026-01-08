@@ -48,6 +48,7 @@ export interface FunctionParameter {
   "Datatype"?: string;
   "Is Mandatory": "Yes" | "No";
   "Variable Argument": "No" | "Yes";
+  Description?: string;
 }
 
 export interface FunctionMeta {
@@ -78,6 +79,7 @@ export interface DefinitionAttributeParameter {
   "Separator Char"?: string;
   "Keyword Set"?: string;
   "Keywords"?: string;
+  Description?: string;
 }
 
 export interface DefinitionAttributeMeta {
@@ -95,7 +97,7 @@ export interface DefinitionAttribute {
 
 export type DefinitionAttributesIndex = Record<string, DefinitionAttribute>;
 
-export interface ActionParameter {}
+export interface ActionParameter { }
 
 export interface ActionMeta {
   Aliases: string;
@@ -114,3 +116,27 @@ export interface TallyAction {
 
 // Fix: Renamed ActionCollection to ActionsIndex for consistency and to fix compilation errors.
 export type ActionsIndex = Record<string, TallyAction>;
+
+export interface PropertyChange<T> {
+  OldValue: T;
+  NewValue: T;
+}
+
+export interface ItemDiff {
+  HasChanges: boolean;
+  DescriptionChanged: boolean;
+  Description?: PropertyChange<string>;
+
+  AddedMeta: Record<string, string>;
+  DeletedMeta: Record<string, string>;
+  ModifiedMeta: Record<string, PropertyChange<string>>;
+
+  ParametersChanged: boolean;
+  AddedParameters: Record<string, any>;
+  DeletedParameters: Record<string, any>;
+  ModifiedParameters: Record<string, PropertyChange<any>>;
+
+  NameChanged: boolean;
+  OldName?: string;
+  NewName?: string;
+}

@@ -57,8 +57,16 @@ const AppContent: React.FC = () => {
     //     return <div className="p-4 text-center">No versions found.</div>
     // }
 
-    const compareToVersion = availableVersions.length > 0 ? availableVersions[0] : '';
-    const compareFromVersion = availableVersions.length > 1 ? availableVersions[1] : compareToVersion;
+    // Sort versions to ensure we pick the latest
+    // Assuming version format is optional 'v' + float (e.g. "7.0" or "v7.0")
+    const sortedVersions = [...availableVersions].sort((a, b) => {
+        const vA = parseFloat(a.replace(/^v/, ''));
+        const vB = parseFloat(b.replace(/^v/, ''));
+        return vA - vB; // Ascending: 3.0, 4.0, ... 7.0
+    });
+
+    const compareToVersion = sortedVersions.length > 0 ? sortedVersions[sortedVersions.length - 1] : '';
+    const compareFromVersion = sortedVersions.length > 1 ? sortedVersions[sortedVersions.length - 2] : (sortedVersions.length > 0 ? sortedVersions[0] : '');
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -74,7 +82,7 @@ const AppContent: React.FC = () => {
                             <Route path="/actions" element={<Navigate to={`/${initialVersion}/actions`} replace />} />
 
 
-                            <Route path="/compare" element={<Navigate to={`/${compareFromVersion}/compare/${compareToVersion}`} replace />} />
+
                         </>
                     ) :
                         (<></>)
@@ -97,13 +105,9 @@ const AppContent: React.FC = () => {
                             element={<ActionsPage />}
                         />
                     </Route>
-                    {/* 
-               
-                   
                     <Route path="/compare" element={<Navigate to={`/compare/${compareFromVersion}/${compareToVersion}`} replace />} />
-                    <Route path="/compare/:fromVersion/:toVersion" element={<ComparePage schemaIndex={schemaIndex} />} />
-                    <Route path="/compare/:fromVersion/:toVersion/schema/:schemaName" element={<ComparePage schemaIndex={schemaIndex} />} />
-                 */}
+                    <Route path="/compare/:fromVersion/:toVersion" element={<ComparePage schemaIndex={{}} />} />
+                    <Route path="/compare/:fromVersion/:toVersion/:type/:itemName" element={<ComparePage schemaIndex={{}} />} />
                 </Routes>
             </main>
             <Footer />

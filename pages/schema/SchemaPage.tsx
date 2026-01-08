@@ -9,12 +9,14 @@ import { SchemaIndex } from '../../types';
 import { useVersion } from '../../contexts/VersionContext';
 import Spinner from '../../components/Spinner';
 import { SCHEMALOCATION } from '@/constants';
+import { useItemHistory } from '../../hooks/useItemHistory';
 
 const SchemaPage: React.FC<{ schemaIndex: SchemaIndex }> = ({ }) => {
     const [schemaIndex, setSchemaIndex] = useState<string[]>([]);
     const { version, schemaName } = useParams<{ version: string; schemaName?: string }>();
     const navigate = useNavigate();
     const { availableVersions, currentVersion, setCurrentVersion } = useVersion();
+    const { history: itemHistory } = useItemHistory('Schema');
 
     const versionForPage = (version && availableVersions.includes(version)) ? version : (currentVersion || (availableVersions.length > 0 ? availableVersions[0] : ''));
 
@@ -55,6 +57,7 @@ const SchemaPage: React.FC<{ schemaIndex: SchemaIndex }> = ({ }) => {
             onFilterChange={setFilter}
             filteredSchemaNames={filteredSchemaNames}
             onClose={() => setSidebarOpen(false)}
+            itemHistory={itemHistory}
         />
     );
 

@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ChangesSummary from '../../components/ChangesSummary';
 import SchemaDiffView from '../../components/SchemaDiffView';
+import ItemDiffView from '../../components/ItemDiffView';
 import VersionSelector from '../../components/VersionSelector';
 import CompareInstructions from './CompareInstructions';
 import { SchemaIndex } from '../../types';
 import MobileSidebar from '../../components/MobileSidebar';
 import { MenuIcon } from '../../components/icons';
+import { useVersion } from '../../contexts/VersionContext';
 
 const CompareSidebar: React.FC<{
     allVersions: string[];
@@ -14,71 +16,113 @@ const CompareSidebar: React.FC<{
     toVersion: string;
     onFromChange: (v: string) => void;
     onToChange: (v: string) => void;
-}> = ({ allVersions, fromVersion, toVersion, onFromChange, onToChange }) => (
-    <div className="p-4 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-full flex flex-col">
-        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Compare Versions</h3>
-        <div className="space-y-4">
-             <div>
-                <label htmlFor="from-version" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From</label>
-                <VersionSelector
-                    id="from-version"
-                    versions={allVersions.filter(v => v !== toVersion)}
-                    currentVersion={fromVersion}
-                    onChange={onFromChange}
-                />
-            </div>
-            <div>
-                <label htmlFor="to-version" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To</label>
-                <VersionSelector
-                    id="to-version"
-                    versions={allVersions.filter(v => v !== fromVersion)}
-                    currentVersion={toVersion}
-                    onChange={onToChange}
-                />
+}> = ({ allVersions, fromVersion, toVersion, onFromChange, onToChange }) => {
+
+    const getVerNum = (v: string) => parseFloat(v.replace(/^v/, ''));
+
+    // Filter Logic:
+    // From Version Selector: Should show versions LESS THAN selected To Version
+    // To Version Selector: Should show versions GREATER THAN selected From Version
+
+    const fromOptions = allVersions.filter(v => {
+        if (!toVersion) return true;
+        return getVerNum(v) < getVerNum(toVersion);
+    });
+
+    const toOptions = allVersions.filter(v => {
+        if (!fromVersion) return true;
+        return getVerNum(v) > getVerNum(fromVersion);
+    });
+
+    return (
+        <div className="p-4 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-full flex flex-col">
+            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Compare Versions</h3>
+            <div className="space-y-4">
+                <div>
+                    <label htmlFor="from-version" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From</label>
+                    <VersionSelector
+                        id="from-version"
+                        versions={fromOptions}
+                        currentVersion={fromVersion}
+                        onChange={onFromChange}
+                    />
+                </div>
+                <div>
+                    <label htmlFor="to-version" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To</label>
+                    <VersionSelector
+                        id="to-version"
+                        versions={toOptions}
+                        currentVersion={toVersion}
+                        onChange={onToChange}
+                    />
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 
 const ComparePage: React.FC<{ schemaIndex: SchemaIndex }> = ({ schemaIndex }) => {
-    const { fromVersion, toVersion, schemaName } = useParams();
+    const { fromVersion, toVersion, type, itemName } = useParams();
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { availableVersions } = useVersion();
 
-    const allVersions = Object.keys(schemaIndex).sort((a, b) => Number(b.substring(1)) - Number(a.substring(1)));
+    const getVerNum = (v: string) => parseFloat(v.replace(/^v/, ''));
+    const allVersions = [...availableVersions].sort((a, b) => getVerNum(b) - getVerNum(a));
+
+    // Defaults: To = Latest, From = Previous (or nothing/latest-1)
+    // If we have at least 2 versions:
+    // defaultTo = allVersions[0] (Latest)
+    // defaultFrom = allVersions.length > 1 ? allVersions[1] : '';
+    const defaultTo = allVersions.length > 0 ? allVersions[0] : '';
+    const defaultFrom = allVersions.length > 1 ? allVersions[1] : '';
+
+    const currentFrom = fromVersion || defaultFrom;
+    const currentTo = toVersion || defaultTo;
 
     const handleFromChange = (newFrom: string) => {
-        if(toVersion) {
-            navigate(`/compare/${newFrom}/${toVersion}`);
-        }
+        // When changing From, keep current To (or default if missing)
+        navigate(`/compare/${newFrom}/${currentTo}`);
         setSidebarOpen(false);
     };
 
     const handleToChange = (newTo: string) => {
-        if (fromVersion) {
-            navigate(`/compare/${fromVersion}/${newTo}`);
-        }
+        // When changing To, keep current From (or default if missing)
+        navigate(`/compare/${currentFrom}/${newTo}`);
         setSidebarOpen(false);
     };
-    
+
     const isValidSelection = fromVersion && toVersion && fromVersion !== toVersion && allVersions.includes(fromVersion) && allVersions.includes(toVersion);
-    
+
+    const isInverse = getVerNum(currentFrom) > getVerNum(currentTo);
+
+    // Effective versions for sidebar display (swap if inverse)
+    const effectiveFrom = isInverse ? currentTo : currentFrom;
+    const effectiveTo = isInverse ? currentFrom : currentTo;
+
     const sidebarContent = (
-        <CompareSidebar 
+        <CompareSidebar
             allVersions={allVersions}
-            fromVersion={fromVersion || (allVersions.length > 1 ? allVersions[1] : '')}
-            toVersion={toVersion || (allVersions.length > 0 ? allVersions[0] : '')}
+            fromVersion={effectiveFrom}
+            toVersion={effectiveTo}
             onFromChange={handleFromChange}
             onToChange={handleToChange}
         />
     );
 
-    const mainContent = !isValidSelection ? <CompareInstructions /> : (
-        schemaName 
-            ? <SchemaDiffView key={`${fromVersion}-${toVersion}-${schemaName}`} /> 
-            : <ChangesSummary key={`${fromVersion}-${toVersion}`} schemaIndex={schemaIndex} />
-    );
+    let mainContent;
+    if (!isValidSelection) {
+        mainContent = <CompareInstructions />;
+    } else if (itemName && type) {
+        if (type.toLowerCase() === 'schema') {
+            mainContent = <SchemaDiffView key={`${fromVersion}-${toVersion}-${itemName}`} />;
+        } else {
+            mainContent = <ItemDiffView key={`${fromVersion}-${toVersion}-${type}-${itemName}`} />;
+        }
+    } else {
+        mainContent = <ChangesSummary key={`${fromVersion}-${toVersion}`} schemaIndex={schemaIndex} />;
+    }
 
     return (
         <div className="flex">

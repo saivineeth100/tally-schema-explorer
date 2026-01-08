@@ -13,10 +13,13 @@ const SchemaSidebar: React.FC<{
     onFilterChange: (newFilter: string) => void;
     filteredSchemaNames: string[];
     onClose: () => void;
-}> = ({ availableVersions, currentVersion, onVersionChange, filter, onFilterChange, filteredSchemaNames, onClose }) => {
+    itemHistory: Record<string, { added?: string; deleted?: string }>;
+}> = ({ availableVersions, currentVersion, onVersionChange, filter, onFilterChange, filteredSchemaNames, onClose, itemHistory }) => {
     const navLinkClasses = "flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-150";
     const activeClassName = "bg-cyan-500 text-white";
     const inactiveClassName = "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white";
+
+    const currentVerNum = parseFloat(currentVersion.replace(/^v/, ''));
 
     return (
         <div className="flex flex-col h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
@@ -36,17 +39,38 @@ const SchemaSidebar: React.FC<{
                 />
             </div>
             <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                {filteredSchemaNames.map(name => (
-                    <NavLink
-                        key={name}
-                        to={`/${currentVersion}/schema/${name}`}
-                        onClick={onClose}
-                        className={({ isActive }) => `${navLinkClasses} ${isActive ? activeClassName : inactiveClassName}`}
-                    >
-                        <DocumentIcon className="w-5 h-5 mr-3" />
-                        <span>{name}</span>
-                    </NavLink>
-                ))}
+                {filteredSchemaNames.map(name => {
+                    const h = itemHistory[name];
+                    const addedVerNum = h?.added ? parseFloat(h.added.replace(/^v/, '')) : 0;
+                    const deletedVerNum = h?.deleted ? parseFloat(h.deleted.replace(/^v/, '')) : Infinity;
+
+                    const showAdded = h?.added && addedVerNum <= currentVerNum;
+                    const showDeleted = h?.deleted && deletedVerNum > currentVerNum; // Only showing deleted if it exists now but deleted later? or if it IS deleted now?
+                    // Actually, if it's deleted in the current version, it shouldn't show in index.json (filteredSchemaNames). 
+                    // But if it's deleted in FUTURE version, we warn.
+
+                    return (
+                        <NavLink
+                            key={name}
+                            to={`/${currentVersion}/schema/${name}`}
+                            onClick={onClose}
+                            className={({ isActive }) => `${navLinkClasses} ${isActive ? activeClassName : inactiveClassName}`}
+                        >
+                            <div className="flex flex-col w-full">
+                                <div className="flex items-center">
+                                    <DocumentIcon className="w-5 h-5 mr-3 flex-shrink-0" />
+                                    <span>{name}</span>
+                                </div>
+                                {(showAdded || showDeleted) && (
+                                    <div className="flex gap-1 ml-8 mt-1 flex-wrap">
+                                        {showAdded && <span className="text-[10px] bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 px-1 py-0.5 rounded leading-none">+{h.added?.replace(/^v/, '')}</span>}
+                                        {showDeleted && <span className="text-[10px] bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 px-1 py-0.5 rounded leading-none">Del v{h.deleted?.replace(/^v/, '')}</span>}
+                                    </div>
+                                )}
+                            </div>
+                        </NavLink>
+                    );
+                })}
             </nav>
         </div>
     );

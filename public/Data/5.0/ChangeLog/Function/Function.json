@@ -1,1 +1,1 @@
-{"added":["AnyGSTNotificationPending","GetLastExchangeOnlineTime","GetPartyGSTINs","IsAnyFetchedDataReset","BaseString"],"deleted":[]}
+﻿{"added":["AnyGSTNotificationPending","GetLastExchangeOnlineTime","GetPartyGSTINs","IsAnyFetchedDataReset","BaseString"],"deleted":[],"modified":["AccessObj","ObjectOf"]}
