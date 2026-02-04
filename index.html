@@ -5,6 +5,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tally Schema Explorer</title>
+  
+  <!-- Google Tag Manager -->
+  <script>(function (w, d, s, l, i) {
+      w[l] = w[l] || []; w[l].push({
+        'gtm.start':
+          new Date().getTime(), event: 'gtm.js'
+      }); var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-MDGQ6433');</script>
+  <!-- End Google Tag Manager -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -38,62 +49,14 @@
       window.history.replaceState(null, null, redirect);
     }
   </script>
-  <style>
-    /* Custom scrollbar for Webkit browsers */
-    ::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
-    }
 
-    ::-webkit-scrollbar-track {
-      background-color: #f3f4f6;
-      /* gray-100 */
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background-color: #d1d5db;
-      /* gray-300 */
-      border-radius: 10px;
-      border: 2px solid #f3f4f6;
-      /* gray-100 */
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background-color: #a0a0a0;
-      /* gray-400 */
-    }
-
-    html.dark ::-webkit-scrollbar-track {
-      background-color: #121212;
-      /* gray-900 */
-    }
-
-    html.dark ::-webkit-scrollbar-thumb {
-      background-color: #444444;
-      /* gray-600 */
-      border-color: #121212;
-      /* gray-900 */
-    }
-
-    html.dark ::-webkit-scrollbar-thumb:hover {
-      background-color: #6b7280;
-      /* gray-500 */
-    }
-
-    /* Custom scrollbar for Firefox */
-    html {
-      scrollbar-width: thin;
-      scrollbar-color: #d1d5db #f3f4f6;
-    }
-
-    html.dark {
-      scrollbar-color: #444444 #121212;
-    }
-  </style>
-  <link rel="stylesheet" href="/index.css">
 </head>
 
 <body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 antialiased">
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MDGQ6433" height="0" width="0"
+      style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>

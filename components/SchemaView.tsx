@@ -37,6 +37,7 @@ const SchemaView: React.FC = () => {
     };
 
     fetchSchema();
+    setSearchTerm('');
   }, [version, schemaName]);
 
   useEffect(() => {
@@ -140,15 +141,35 @@ const SchemaView: React.FC = () => {
       </section>
 
       <section>
-        <div className="flex justify-between items-center border-b-2 border-gray-200 dark:border-gray-700 pb-2 mb-4">
+        <div className="sticky top-0 md:top-16 z-30 flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4 mb-4 pt-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md">
           <h2 className="text-2xl font-bold text-cyan-500 dark:text-cyan-400">Properties</h2>
-          <input
-            type="text"
-            placeholder="Search properties..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search properties..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 w-full sm:w-64"
+            />
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">

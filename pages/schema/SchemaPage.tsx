@@ -41,11 +41,17 @@ const SchemaPage: React.FC<{ schemaIndex: SchemaIndex }> = ({ }) => {
 
 
     const handleVersionChange = (newVersion: string) => {
-        navigate(`/${newVersion}/schema/`);
+        if (schemaName) {
+            navigate(`/${newVersion}/schema/${encodeURIComponent(schemaName)}`);
+        } else {
+            navigate(`/${newVersion}/schema/`);
+        }
     };
 
+    const normalizeString = (str: string) => str.replace(/\s+/g, '').toLowerCase();
+
     const filteredSchemaNames = schemaIndex
-        .filter(name => name.toLowerCase().includes(filter.toLowerCase()))
+        .filter(name => normalizeString(name).includes(normalizeString(filter)))
         .sort();
 
     const sidebarContent = (
@@ -66,18 +72,30 @@ const SchemaPage: React.FC<{ schemaIndex: SchemaIndex }> = ({ }) => {
     }
 
     return (
-        <div className="flex">
-            <aside className="hidden lg:block w-64 flex-shrink-0 sticky top-16 h-[calc(100vh-4rem)]">
+        <div className="flex min-h-[calc(100vh-4rem)]">
+            {/* Desktop sidebar */}
+            <aside className="hidden lg:block w-64 flex-shrink-0 sticky top-16 h-[calc(100vh-4rem)] border-r border-gray-200 dark:border-gray-800">
                 {sidebarContent}
             </aside>
-            <main className="flex-1 bg-gray-50 dark:bg-gray-900 w-full">
-                <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 m-2 fixed bottom-4 right-4 bg-cyan-500 text-white rounded-full shadow-lg z-30">
+
+            {/* Main content */}
+            <main className="flex-1 bg-gray-50 dark:bg-gray-900">
+                {/* Mobile menu button */}
+                <button
+                    onClick={() => setSidebarOpen(true)}
+                    className="lg:hidden fixed bottom-6 right-6 p-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-full shadow-lg shadow-cyan-500/30 z-30 transition-colors"
+                    aria-label="Open menu"
+                >
                     <MenuIcon className="w-6 h-6" />
                 </button>
+
+                {/* Mobile sidebar */}
                 <MobileSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)}>
                     {sidebarContent}
                 </MobileSidebar>
-                {schemaName ? <SchemaView /> : <WelcomePage version={versionForPage} schemaNames={schemaIndex} />}
+
+                {/* Page content */}
+                {schemaName ? <SchemaView /> : <WelcomePage version={versionForPage} />}
             </main>
         </div>
     );

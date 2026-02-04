@@ -110,7 +110,13 @@ const ItemPage: React.FC<ItemPageProps> = ({ itemType }) => {
     }, [itemIndex, itemIndex, itemType]);
 
     const handleVersionChange = (newVersion: string) => {
-        navigate(`/${newVersion}/${TypeUrls[itemType]}/`);
+        if (itemCategory && itemName) {
+            navigate(`/${newVersion}/${TypeUrls[itemType]}/${encodeURIComponent(itemCategory)}/${encodeURIComponent(itemName)}`);
+        } else if (itemCategory) {
+            navigate(`/${newVersion}/${TypeUrls[itemType]}/${encodeURIComponent(itemCategory)}`);
+        } else {
+            navigate(`/${newVersion}/${TypeUrls[itemType]}/`);
+        }
     };
 
     const itemData = itemCategory && itemName && allItems[itemCategory] ? allItems[itemCategory][itemName] : null;

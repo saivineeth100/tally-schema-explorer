@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import VersionSelector from './VersionSelector';
@@ -22,21 +20,36 @@ const SchemaSidebar: React.FC<{
     const currentVerNum = parseFloat(currentVersion.replace(/^v/, ''));
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
-            <div className="p-4 space-y-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-hidden">
+            {/* Sticky header with version and search - no 'sticky' class needed as flex parent handles layout */}
+            <div className="flex-shrink-0 p-4 space-y-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 z-10">
                 <VersionSelector
                     versions={availableVersions}
                     currentVersion={currentVersion}
                     onChange={onVersionChange}
                 />
-                <input
-                    type="text"
-                    placeholder="Filter schemas..."
-                    value={filter}
-                    onChange={(e) => onFilterChange(e.target.value)}
-                    className="w-full bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2.5"
-                    aria-label="Filter schemas"
-                />
+                {/* Search input with clear button */}
+                <div className="relative">
+                    <input
+                        type="text"
+                        placeholder="Filter schemas..."
+                        value={filter}
+                        onChange={(e) => onFilterChange(e.target.value)}
+                        className="w-full bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2.5 pr-10"
+                        aria-label="Filter schemas"
+                    />
+                    {filter && (
+                        <button
+                            onClick={() => onFilterChange('')}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                            aria-label="Clear filter"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    )}
+                </div>
             </div>
             <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                 {filteredSchemaNames.map(name => {
@@ -45,9 +58,7 @@ const SchemaSidebar: React.FC<{
                     const deletedVerNum = h?.deleted ? parseFloat(h.deleted.replace(/^v/, '')) : Infinity;
 
                     const showAdded = h?.added && addedVerNum <= currentVerNum;
-                    const showDeleted = h?.deleted && deletedVerNum > currentVerNum; // Only showing deleted if it exists now but deleted later? or if it IS deleted now?
-                    // Actually, if it's deleted in the current version, it shouldn't show in index.json (filteredSchemaNames). 
-                    // But if it's deleted in FUTURE version, we warn.
+                    const showDeleted = h?.deleted && deletedVerNum > currentVerNum;
 
                     return (
                         <NavLink

@@ -82,14 +82,18 @@ const ComparePage: React.FC<{ schemaIndex: SchemaIndex }> = ({ schemaIndex }) =>
     const currentTo = toVersion || defaultTo;
 
     const handleFromChange = (newFrom: string) => {
-        // When changing From, keep current To (or default if missing)
-        navigate(`/compare/${newFrom}/${currentTo}`);
+        // When changing From, keep current To and preserve type/itemName if present
+        const basePath = `/compare/${newFrom}/${currentTo}`;
+        const fullPath = type && itemName ? `${basePath}/${type}/${itemName}` : basePath;
+        navigate(fullPath);
         setSidebarOpen(false);
     };
 
     const handleToChange = (newTo: string) => {
-        // When changing To, keep current From (or default if missing)
-        navigate(`/compare/${currentFrom}/${newTo}`);
+        // When changing To, keep current From and preserve type/itemName if present
+        const basePath = `/compare/${currentFrom}/${newTo}`;
+        const fullPath = type && itemName ? `${basePath}/${type}/${itemName}` : basePath;
+        navigate(fullPath);
         setSidebarOpen(false);
     };
 

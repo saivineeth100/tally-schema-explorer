@@ -1,44 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { TallySchema } from '../../types';
 import Spinner from '../../components/Spinner';
 import { DocumentIcon } from '../../components/icons';
-import { SCHEMALOCATION } from '@/constants';
 
-const WelcomePage: React.FC<{ version: string; schemaNames: string[] }> = ({ version, schemaNames }) => {
-    const [primarySchemas, setPrimarySchemas] = useState<TallySchema[]>([]);
+interface PrimarySchema {
+    sdfId: string;
+    name: string;
+}
+
+const WelcomePage: React.FC<{ version: string }> = ({ version }) => {
+    const [primarySchemas, setPrimarySchemas] = useState<PrimarySchema[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-        if (!version || schemaNames.length === 0) {
+        if (!version) {
             setLoading(false);
             setPrimarySchemas([]);
             return;
         }
 
-        const fetchAllSchemas = async () => {
+        const fetchPrimarySchemas = async () => {
             setLoading(true);
             setError(null);
             try {
-                const schemaPromises = schemaNames.map(name =>
-                    fetch(`${SCHEMALOCATION.replace("{version}", version)}/${name}.json`).then(res => {
-                        if (!res.ok) throw new Error(`Failed to fetch ${name}`);
-                        return res.json();
-                    })
-                );
+                const response = await fetch(`/Data/${version}/Schema/AllSchemas.json`);
+                if (!response.ok) throw new Error('Failed to fetch schemas');
+                const data = await response.json() as Record<string, string>;
 
-                const allSchemasResults = await Promise.allSettled(schemaPromises);
+                // Convert to array and sort by name
+                const schemas = Object.entries(data)
+                    .map(([sdfId, name]) => ({ sdfId, name }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
 
-                const successfullyFetchedSchemas = allSchemasResults
-                    .filter(result => result.status === 'fulfilled')
-                    .map(result => (result as PromiseFulfilledResult<TallySchema>).value);
-
-                const primary = successfullyFetchedSchemas
-                    .filter(s => s.Meta['Is Primary'] === 'Yes');
-
-                setPrimarySchemas(primary.sort((a, b) => a.Name.localeCompare(b.Name)));
-
+                setPrimarySchemas(schemas);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'An unknown error occurred.');
             } finally {
@@ -46,55 +42,134 @@ const WelcomePage: React.FC<{ version: string; schemaNames: string[] }> = ({ ver
             }
         };
 
-        fetchAllSchemas();
-    }, [version, schemaNames]);
+        fetchPrimarySchemas();
+    }, [version]);
+
+    const filteredSchemas = useMemo(() => {
+        if (!searchQuery.trim()) return primarySchemas;
+
+        const normalize = (str: string) => str.replace(/\s+/g, '').toLowerCase();
+        const query = normalize(searchQuery);
+
+        return primarySchemas.filter(
+            schema => normalize(schema.name).includes(query) || normalize(schema.sdfId).includes(query)
+        );
+    }, [primarySchemas, searchQuery]);
 
     if (loading) return <Spinner />;
     if (error) return <div className="p-8 text-red-600 dark:text-red-400 text-center">{error}</div>;
 
     return (
-        <div className="p-4 sm:p-6 md:p-8">
-            <header className="mb-8">
-                <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-2">Primary Schemas</h1>
-                <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400">
-                    Core objects for <span className="font-semibold text-cyan-500 dark:text-cyan-400">Version {version}</span>. Select a schema to view details.
-                </p>
-            </header>
+        <div className="min-h-full">
+            {/* Sticky Header with Search */}
+            <div className="sticky top-16 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="px-6 py-6 sm:px-8">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="p-2.5 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl shadow-lg shadow-cyan-500/20">
+                                <DocumentIcon className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                                    Primary Schemas
+                                </h1>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                                    <span className="font-medium text-cyan-600 dark:text-cyan-400">Version {version}</span> • {filteredSchemas.length} of {primarySchemas.length} schemas
+                                </p>
+                            </div>
+                        </div>
+                        {/* Search input */}
+                        <div className="relative w-full sm:w-72">
+                            <input
+                                type="text"
+                                placeholder="Search schemas..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block pl-10 pr-10 py-2.5"
+                                aria-label="Search schemas"
+                            />
+                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                    aria-label="Clear search"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            {primarySchemas.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {primarySchemas.map(schema => (
-                        <Link
-                            key={schema.Name}
-                            to={`/${version}/schema/${schema.Name}`}
-                            className="block bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 ease-in-out group border border-gray-200 dark:border-gray-700 hover:border-cyan-500 dark:hover:border-cyan-400"
-                        >
-                            <div className="flex items-center mb-4">
-                                <div className="p-2 bg-cyan-100 dark:bg-cyan-500/20 rounded-lg mr-4">
-                                    <DocumentIcon className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
-                                </div>
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
-                                    {schema.Name}
-                                </h2>
-                            </div>
-                            <div className="space-y-2">
-                                {Object.entries(schema.Meta).slice(0, 2).map(([key, value]) => (
-                                    <div key={key} className="flex text-sm">
-                                        <span className="font-semibold text-gray-500 dark:text-gray-400 w-24 flex-shrink-0">{key}:</span>
-                                        <span className="text-gray-700 dark:text-gray-300 truncate">{value}</span>
+            {/* Content */}
+            <div className="p-6 sm:p-8">
+                {filteredSchemas.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        {filteredSchemas.map(schema => (
+                            <Link
+                                key={schema.name}
+                                to={`/${version}/schema/${schema.name}`}
+                                className="group relative bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:border-cyan-500 dark:hover:border-cyan-500 transition-all duration-200 hover:shadow-lg"
+                            >
+                                {/* Card content */}
+                                <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg group-hover:bg-cyan-50 dark:group-hover:bg-cyan-900/30 transition-colors">
+                                        <DocumentIcon className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors" />
                                     </div>
-                                ))}
-                            </div>
-                        </Link>
-                    ))}
-                </div>
-            ) : (
-                <div className="text-center py-12">
-                    <DocumentIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No Primary Schemas</h3>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">No schemas were marked as "primary" for this version.</p>
-                </div>
-            )}
+                                    <div className="flex-1 min-w-0">
+                                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors truncate">
+                                            {schema.name}
+                                        </h2>
+                                        <div className="mt-2">
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <span className="text-gray-400 dark:text-gray-500">SDF Id:</span>
+                                                <span className="font-mono text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">{schema.sdfId}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Arrow indicator */}
+                                    <svg className="w-5 h-5 text-gray-300 dark:text-gray-600 group-hover:text-cyan-500 group-hover:translate-x-1 transition-all flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+
+                                {/* Primary badge */}
+                                <div className="absolute top-3 right-3">
+                                    <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-cyan-100 dark:bg-cyan-900/50 text-cyan-700 dark:text-cyan-300">
+                                        Primary
+                                    </span>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-16">
+                        <div className="inline-flex p-4 rounded-full bg-gray-100 dark:bg-gray-800 mb-4">
+                            <DocumentIcon className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                            {searchQuery ? 'No matching schemas' : 'No Primary Schemas'}
+                        </h3>
+                        <p className="mt-1 text-gray-500 dark:text-gray-400">
+                            {searchQuery ? `No schemas match "${searchQuery}"` : 'No schemas available for this version.'}
+                        </p>
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="mt-4 text-cyan-600 dark:text-cyan-400 hover:underline text-sm"
+                            >
+                                Clear search
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

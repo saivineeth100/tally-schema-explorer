@@ -146,7 +146,7 @@ const ItemSidebar: React.FC<ItemSidebarProps> = ({ availableVersions, currentVer
                                     )}
                                 </button>
                                 {isExpanded && (
-                                    <ul className="pl-6 mt-1 space-y-1 border-l border-gray-200 dark:border-gray-600 ml-3">
+                                    <ul className="pl-3 mt-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 ml-[1.125rem]">
                                         {filteredItems.map(item => {
                                             const h = itemHistory[item.Name];
                                             const addedVerNum = h?.added ? parseFloat(h.added.replace(/^v/, '')) : 0;
@@ -159,9 +159,9 @@ const ItemSidebar: React.FC<ItemSidebarProps> = ({ availableVersions, currentVer
                                                     <NavLink
                                                         to={`/${currentVersion}/${TypeUrls[itemType]}/${encodeURIComponent(type)}/${encodeURIComponent(item.Name)}`}
                                                         onClick={onClose}
-                                                        className={({ isActive }) => `${navLinkClasses} text-xs py-1.5 ${isActive ? activeClassName : inactiveClassName} flex flex-col items-start`}
+                                                        className={({ isActive }) => `flex flex-col items-start w-full px-2 py-1.5 text-xs font-medium rounded-md transition-colors duration-150 text-left ${isActive ? activeClassName : inactiveClassName}`}
                                                     >
-                                                        <span className="truncate font-mono">{item.Name}</span>
+                                                        <span className="truncate font-mono w-full">{item.Name}</span>
                                                         {(showAdded || showDeleted) && (
                                                             <div className="flex gap-1 mt-0.5 flex-wrap">
                                                                 {showAdded && <span className="text-[9px] bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 px-1 rounded leading-none">+{h.added?.replace(/^v/, '')}</span>}
